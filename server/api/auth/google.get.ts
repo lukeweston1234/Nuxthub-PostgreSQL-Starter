@@ -16,8 +16,10 @@ export default defineOAuthGoogleEventHandler({
           picture: picture,
         },
       });
-    } else {
-      const newUser = await registerUserByEmail(email);
+    }
+    // Account does not exist, registration flow
+    else {
+      const newUser = await registerUserByEmail(email, name, "", picture);
       if (!newUser) throw new Error("Could not register user!");
       await setUserSession(event, {
         user: {

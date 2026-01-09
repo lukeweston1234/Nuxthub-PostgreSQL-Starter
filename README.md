@@ -2,7 +2,7 @@
 
 This is a starter, based on the (Atidone Nuxt)[https://github.com/atinux/atidone] application.
 
-This adds a few things:
+This simply adds:
 
 - A PostgreSQL database with a minimal user schema
 - Docker compose files for the database
@@ -15,12 +15,13 @@ Launch the PSQL database like so:
 docker-compose -f docker-compose.dev.yml up
 ```
 
-### Drizzle
-
-This repo uses database first migrations. In general, I find them easier to reason with and stronger when more complex behavior is required down the line.
-
-You can use Drizzle kit to update your schema like so:
+To start the Nuxt server:
 
 ```sh
-
+pnpm i
+pnpm run dev
 ```
+
+### Documentation
+
+For more information, check out the (NuxtHub docs.)[https://hub.nuxt.com/]

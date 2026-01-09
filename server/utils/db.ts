@@ -10,7 +10,12 @@ export async function getUserByEmail(email: string): Promise<User | null> {
   return account ?? null;
 }
 
-export async function registerUserByEmail(email: string): Promise<User | null> {
+export async function registerUserByEmail(
+  email: string,
+  name: string,
+  bio: string,
+  picture: string
+): Promise<User | null> {
   const existingAccount = await db.query.users.findFirst({
     where: (users, { eq }) => eq(users.email, email),
   });
@@ -27,6 +32,10 @@ export async function registerUserByEmail(email: string): Promise<User | null> {
   if (!newAccount) {
     throw new Error("Failed to create new account!");
   }
+
+  await db
+    .insert(schema.profiles)
+    .values({ userId: newAccount.id, name: name, bio: "", picture: picture });
 
   return newAccount;
 }
