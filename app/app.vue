@@ -100,10 +100,8 @@ const items = [
               >
                 <UAvatar
                   :src="`https://github.com/${user.login}.png`"
-                  :alt="user.login"
                   size="3xs"
                 />
-                {{ user.login }}
               </UButton>
             </UDropdownMenu>
           </div>

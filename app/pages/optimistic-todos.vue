@@ -1,70 +1,71 @@
 <script setup lang="ts">
-import { todosQuery } from '~/queries/todos'
+import { todosQuery } from "~/queries/todos";
 
 definePageMeta({
-  middleware: 'auth'
-})
-const newTodo = ref('')
+  middleware: "auth",
+});
+const newTodo = ref("");
 
-const toast = useToast()
-const { user } = useUserSession()
-const queryCache = useQueryCache()
+const toast = useToast();
+const { user } = useUserSession();
+const queryCache = useQueryCache();
 
-const { data: todos } = useQuery(todosQuery)
+const { data: todos } = useQuery(todosQuery);
 
 const { mutate: addTodo } = useMutation({
   mutation: (title: string) => {
-    if (!title.trim()) throw new Error('Title is required')
-
-    return $fetch('/api/todos', {
-      method: 'POST',
+    if (!title.trim()) throw new Error("Title is required");
+    return $fetch("/api/todos", {
+      method: "POST",
       body: {
         title,
-        completed: 0
-      }
-    }) as Promise<Todo>
+        completed: 0,
+      },
+    }) as Promise<Todo>;
   },
 
   onMutate(title) {
-    // let the user enter new todos right away!
-    newTodo.value = ''
-    const oldTodos = queryCache.getQueryData(todosQuery.key) || []
+    newTodo.value = "";
+    const oldTodos = queryCache.getQueryData(todosQuery.key) || [];
     const newTodoItem = {
       title,
-      completed: 0,
-      // a negative id to differentiate them from the server ones
-      id: -Date.now(),
+      completed: false,
       createdAt: new Date(),
-      userId: user.value!.id
-    } satisfies Todo
+      id: crypto.randomUUID(),
+      userId: user.value?.id as string, // temporary key
+    } satisfies Todo;
     // we use newTodos to check for the cache consistency
     // a better way would be to save the entry time
     // const when = queryCache.getEntries({ key: ['todos'], exact: true }).at(0)?.when
-    const newTodos = [...oldTodos, newTodoItem]
-    queryCache.setQueryData(todosQuery.key, newTodos)
+    const newTodos = [...oldTodos, newTodoItem];
 
-    queryCache.cancelQueries({ key: todosQuery.key, exact: true })
+    queryCache.setQueryData(todosQuery.key, newTodos);
 
-    return { oldTodos, newTodos, newTodoItem }
+    queryCache.cancelQueries({ key: todosQuery.key, exact: true });
+
+    return { oldTodos, newTodos, newTodoItem };
   },
 
   onSuccess(todo, _, { newTodoItem }) {
     // update the todo with the information from the server
     // since we are invalidating queries, this allows us to progressively
     // update the todo list even if the user is adding a lot very quickly
-    const todoList = queryCache.getQueryData(todosQuery.key) || []
-    const todoIndex = todoList.findIndex(t => t.id === newTodoItem.id)
+
+    // Also, we now swap the right key in
+    const todoList = queryCache.getQueryData(todosQuery.key) || [];
+    const todoIndex = todoList.findIndex((t) => t.id === newTodoItem.id);
+
     if (todoIndex >= 0) {
       queryCache.setQueryData(
         todosQuery.key,
         todoList.toSpliced(todoIndex, 1, todo)
-      )
+      );
     }
   },
 
   onSettled() {
     // always refetch the todos after a mutation
-    queryCache.invalidateQueries({ key: todosQuery.key })
+    queryCache.invalidateQueries({ key: todosQuery.key });
   },
 
   onError(err, _title, { oldTodos, newTodos }) {
@@ -72,110 +73,110 @@ const { mutate: addTodo } = useMutation({
     // we also want to check if the oldTodos are still in the cache
     // because the cache could have been updated by another query
     if (
-      newTodos != null
-      && newTodos === queryCache.getQueryData(todosQuery.key)
+      newTodos != null &&
+      newTodos === queryCache.getQueryData(todosQuery.key)
     ) {
-      queryCache.setQueryData(todosQuery.key, oldTodos)
+      queryCache.setQueryData(todosQuery.key, oldTodos);
     }
 
     if (isNuxtZodError(err)) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const title = (err as any).data.data.issues
         .map((issue: { message: string }) => issue.message)
-        .join('\n')
-      toast.add({ title, color: 'error' })
+        .join("\n");
+      toast.add({ title, color: "error" });
+    } else {
+      console.error(err);
+      toast.add({ title: "Unexpected Error", color: "error" });
     }
-    else {
-      console.error(err)
-      toast.add({ title: 'Unexpected Error', color: 'error' })
-    }
-  }
-})
+  },
+});
 
 const { mutate: toggleTodo } = useMutation({
   mutation: (todo: Todo) =>
     $fetch(`/api/todos/${todo.id}`, {
-      method: 'PATCH',
+      method: "PATCH",
       body: {
-        completed: !todo.completed
-      }
+        completed: !todo.completed,
+      },
     }),
 
   onMutate(todo) {
-    const oldTodos = queryCache.getQueryData(todosQuery.key) || []
-    const todoIndex = oldTodos.findIndex(t => t.id === todo.id)
-    let newTodos = oldTodos
+    const oldTodos = queryCache.getQueryData(todosQuery.key) || [];
+    const todoIndex = oldTodos.findIndex((t) => t.id === todo.id);
+    let newTodos = oldTodos;
     if (todoIndex >= 0) {
       newTodos = oldTodos.toSpliced(todoIndex, 1, {
         ...todo,
-        completed: todo.completed ? 0 : 1
-      })
-      queryCache.setQueryData(todosQuery.key, newTodos)
+        completed: !todo.completed,
+      });
+      queryCache.setQueryData(todosQuery.key, newTodos);
     }
 
-    queryCache.cancelQueries({ key: todosQuery.key, exact: true })
+    queryCache.cancelQueries({ key: todosQuery.key, exact: true });
 
-    return { oldTodos, newTodos }
+    return { oldTodos, newTodos };
   },
 
   onSettled() {
     // always refetch the todos after a mutation
-    queryCache.invalidateQueries({ key: todosQuery.key, exact: true })
+    queryCache.invalidateQueries({ key: todosQuery.key, exact: true });
   },
 
   onError(err, todo, { oldTodos, newTodos }) {
     // oldTodos can be undefined if onMutate errors
     if (
-      newTodos != null
-      && newTodos === queryCache.getQueryData(todosQuery.key)
+      newTodos != null &&
+      newTodos === queryCache.getQueryData(todosQuery.key)
     ) {
-      queryCache.setQueryData(todosQuery.key, oldTodos)
+      queryCache.setQueryData(todosQuery.key, oldTodos);
     }
 
-    console.error(err)
-    toast.add({ title: 'Unexpected Error', color: 'error' })
-  }
-})
+    console.error(err);
+    toast.add({ title: "Unexpected Error", color: "error" });
+  },
+});
 
 const { mutate: deleteTodo } = useMutation({
-  mutation: (todo: Todo) => $fetch(`/api/todos/${todo.id}`, { method: 'DELETE' }),
+  mutation: (todo: Todo) =>
+    $fetch(`/api/todos/${todo.id}`, { method: "DELETE" }),
 
   onMutate(todo) {
-    const oldTodos = queryCache.getQueryData(todosQuery.key) || []
-    const todoIndex = oldTodos.findIndex(t => t.id === todo.id)
-    let newTodos = oldTodos
+    const oldTodos = queryCache.getQueryData(todosQuery.key) || [];
+    const todoIndex = oldTodos.findIndex((t) => t.id === todo.id);
+    let newTodos = oldTodos;
     if (todoIndex >= 0) {
-      newTodos = oldTodos.toSpliced(todoIndex, 1)
-      queryCache.setQueryData(todosQuery.key, newTodos)
+      newTodos = oldTodos.toSpliced(todoIndex, 1);
+      queryCache.setQueryData(todosQuery.key, newTodos);
     }
 
-    queryCache.cancelQueries({ key: todosQuery.key, exact: true })
+    queryCache.cancelQueries({ key: todosQuery.key, exact: true });
 
-    return { oldTodos, newTodos }
+    return { oldTodos, newTodos };
   },
 
   onSettled() {
     // always refetch the todos after a mutation
-    queryCache.invalidateQueries({ key: todosQuery.key, exact: true })
+    queryCache.invalidateQueries({ key: todosQuery.key, exact: true });
   },
 
   onError(err, todo, { oldTodos, newTodos }) {
     // oldTodos can be undefined if onMutate errors
-    if (newTodos != null && newTodos === queryCache.getQueryData(todosQuery.key)) {
-      queryCache.setQueryData(todosQuery.key, oldTodos)
+    if (
+      newTodos != null &&
+      newTodos === queryCache.getQueryData(todosQuery.key)
+    ) {
+      queryCache.setQueryData(todosQuery.key, oldTodos);
     }
 
-    console.error(err)
-    toast.add({ title: 'Unexpected Error', color: 'error' })
-  }
-})
+    console.error(err);
+    toast.add({ title: "Unexpected Error", color: "error" });
+  },
+});
 </script>
 
 <template>
-  <form
-    class="flex flex-col gap-4"
-    @submit.prevent="addTodo(newTodo)"
-  >
+  <form class="flex flex-col gap-4" @submit.prevent="addTodo(newTodo)">
     <div class="flex items-center gap-2">
       <UInput
         v-model="newTodo"
@@ -203,14 +204,14 @@ const { mutate: deleteTodo } = useMutation({
         <span
           class="flex-1 font-medium"
           :class="{
-            'text-gray-500': todo.completed || todo.id < 0,
-            'line-through': todo.completed
+            'text-gray-500': todo.completed,
+            'line-through': todo.completed,
           }"
-        >{{ todo.title }}</span>
+          >{{ todo.title }}</span
+        >
 
         <USwitch
           :model-value="Boolean(todo.completed)"
-          :disabled="todo.id < 0"
           @update:model-value="toggleTodo(todo)"
         />
 
@@ -219,7 +220,6 @@ const { mutate: deleteTodo } = useMutation({
           variant="soft"
           size="xs"
           icon="i-lucide-x"
-          :disabled="todo.id < 0"
           @click="deleteTodo(todo)"
         />
       </li>

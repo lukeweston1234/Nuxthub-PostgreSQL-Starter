@@ -1,7 +1,7 @@
-declare module '#auth-utils' {
+declare module "#auth-utils" {
   interface User {
-    id: number
-    login: string
+    id: string;
+    email: string;
   }
 }
-export {}
+export {};
