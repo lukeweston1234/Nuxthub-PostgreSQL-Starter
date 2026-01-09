@@ -1,6 +1,6 @@
 # Nuxt Starter
 
-This is a starter, based on the (Atidone Nuxt)[https://github.com/atinux/atidone] application.
+This is a starter, based on the [Atidone Nuxt](https://github.com/atinux/atidone) application.
 
 This simply adds:
 
@@ -24,4 +24,4 @@ pnpm run dev
 
 ### Documentation
 
-For more information, check out the (NuxtHub docs.)[https://hub.nuxt.com/]
+For more information, check out the [NuxtHub docs.](https://hub.nuxt.com/)
