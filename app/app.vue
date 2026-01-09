@@ -1,45 +1,45 @@
 <script setup lang="ts">
-import type { DropdownMenuItem } from '#ui/types'
+import type { DropdownMenuItem } from "#ui/types";
 
-const { loggedIn, user, clear } = useUserSession()
-const colorMode = useColorMode()
+const { loggedIn, user, clear } = useUserSession();
+const colorMode = useColorMode();
 
 watch(loggedIn, () => {
   if (!loggedIn.value) {
-    navigateTo('/')
+    navigateTo("/");
   }
-})
+});
 
 const isDarkMode = computed({
-  get: () => colorMode.preference === 'dark',
+  get: () => colorMode.preference === "dark",
   set: () =>
-    (colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark')
-})
+    (colorMode.preference = colorMode.value === "dark" ? "light" : "dark"),
+});
 
 useHead({
-  htmlAttrs: { lang: 'en' },
-  link: [{ rel: 'icon', href: '/icon.png' }]
-})
+  htmlAttrs: { lang: "en" },
+  link: [{ rel: "icon", href: "/icon.png" }],
+});
 
 useSeoMeta({
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
-  title: 'Atidone',
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
+  title: "Atidone",
   description:
-    'A Nuxt demo hosted with edge-side rendering, authentication and queyring a Cloudflare D1 database',
-  ogImage: '/social-image.png',
-  twitterImage: '/social-image.png',
-  twitterCard: 'summary_large_image'
-})
+    "A Nuxt demo hosted with edge-side rendering, authentication and queyring a Cloudflare D1 database",
+  ogImage: "/social-image.png",
+  twitterImage: "/social-image.png",
+  twitterCard: "summary_large_image",
+});
 
 const items = [
   [
     {
-      label: 'Logout',
-      icon: 'i-lucide-log-out',
-      onSelect: clear
-    }
-  ]
-] satisfies DropdownMenuItem[][]
+      label: "Logout",
+      icon: "i-lucide-log-out",
+      onSelect: clear,
+    },
+  ],
+] satisfies DropdownMenuItem[][];
 </script>
 
 <template>
@@ -51,7 +51,8 @@ const items = [
           variant="ghost"
           color="neutral"
           :icon="
-            $colorMode.preference === 'dark' || $colorMode.preference === 'system'
+            $colorMode.preference === 'dark' ||
+            $colorMode.preference === 'system'
               ? 'i-lucide-moon'
               : 'i-lucide-sun'
           "
@@ -62,23 +63,19 @@ const items = [
       <UCard variant="subtle">
         <template #header>
           <h3 class="text-lg font-semibold leading-6">
-            <NuxtLink to="/">
-              Atidone
-            </NuxtLink>
+            <NuxtLink to="/"> Atidone </NuxtLink>
           </h3>
           <UButton
+            class="flex items-center gap-2"
             v-if="!loggedIn"
-            to="/api/auth/github"
-            icon="i-simple-icons-github"
-            label="Login with GitHub"
+            to="/api/auth/google"
+            icon="i-simple-icons-google"
+            label="Login with Google"
             color="neutral"
             size="xs"
             external
           />
-          <div
-            v-else
-            class="flex flex-wrap -mx-2 sm:mx-0"
-          >
+          <div v-else class="flex flex-wrap -mx-2 sm:mx-0">
             <UButton
               to="/todos"
               icon="i-lucide-list"
@@ -90,13 +87,12 @@ const items = [
               to="/optimistic-todos"
               icon="i-lucide-sparkles"
               label="Optimistic Todos"
-              :color="$route.path === '/optimistic-todos' ? 'primary' : 'neutral'"
+              :color="
+                $route.path === '/optimistic-todos' ? 'primary' : 'neutral'
+              "
               variant="ghost"
             />
-            <UDropdownMenu
-              v-if="user"
-              :items="items"
-            >
+            <UDropdownMenu v-if="user" :items="items">
               <UButton
                 color="neutral"
                 variant="ghost"
