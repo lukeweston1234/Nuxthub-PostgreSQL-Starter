@@ -6,7 +6,6 @@ import {
   boolean,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import { email } from "zod";
 
 export const users = pgTable("users", {
   id: uuid("id")

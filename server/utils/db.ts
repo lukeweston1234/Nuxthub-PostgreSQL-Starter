@@ -1,6 +1,5 @@
 import { db } from "hub:db";
 import type { User } from "#auth-utils";
-import { users } from "../db/schema/users";
 
 export async function getUserByEmail(email: string): Promise<User | null> {
   const account = await db.query.users.findFirst({
