@@ -23,9 +23,9 @@ useHead({
 
 useSeoMeta({
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
-  title: "Atidone",
+  title: "Nuxt Psql Starter",
   description:
-    "A Nuxt demo hosted with edge-side rendering, authentication and queyring a Cloudflare D1 database",
+    "A Nuxt demo hosted with edge-side rendering, authentication and a psql database",
   ogImage: "/social-image.png",
   twitterImage: "/social-image.png",
   twitterCard: "summary_large_image",
@@ -63,7 +63,7 @@ const items = [
       <UCard variant="subtle">
         <template #header>
           <h3 class="text-lg font-semibold leading-6">
-            <NuxtLink to="/"> Atidone </NuxtLink>
+            <NuxtLink to="/"> Nuxthub Starter </NuxtLink>
           </h3>
           <UButton
             class="flex items-center gap-2"
