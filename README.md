@@ -9,6 +9,17 @@ This simply adds:
 
 ### Getting Started
 
+Fill your .env out like so:
+
+```
+NUXT_OAUTH_GOOGLE_CLIENT_ID=
+NUXT_OAUTH_GOOGLE_CLIENT_SECRET=
+NUXT_OAUTH_GOOGLE_REDIRECT_URL=
+NUXT_SESSION_PASSWORD=
+
+DATABASE_URL=
+```
+
 Launch the PSQL database like so:
 
 ```sh
